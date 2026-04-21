@@ -1,52 +1,46 @@
-﻿import time
-import os
-import random
+import config
+
 
 class RavanaUltimate:
     def __init__(self):
         self.heads = {
-            8: "Somatic_Feedback_Sync",
-            9: "Neural_Path_Cloaking",
-            10: "Auto_Purge_Trigger",
-            11: "Signal_Frequency_Lock",
-            12: "Cognitive_Liberty_Seal"
+            10: "Somatic_Feedback_Sync",
+            11: "Neural_Path_Cloaking",
+            12: "Auto_Purge_Trigger",
         }
         self.shield_active = True
 
-    def head_8_somatic_sync(self, heart_rate):
-        # Syncs shield intensity to biological stress
+    def head_10_somatic_sync(self, heart_rate: int) -> str:
+        """Sync shield intensity to biological stress (HEAD 10)."""
         if heart_rate > 100:
-            print("[RAVANA] ❤️ HEAD 8: Somatic Stress Detected. Tightening Shield...")
+            print("[RAVANA] ❤️  HEAD 10: Somatic stress detected — tightening shield...")
             return "HIGH_INTENSITY"
+        print("[RAVANA] ❤️  HEAD 10: Somatic integrity nominal.")
         return "STANDARD"
 
-    def head_9_neural_cloaking(self):
-        # Masks the specific logic patterns of the Enki-AI
-        print("[RAVANA] 🎭 HEAD 9: Neural Path Cloaking Active. Logic patterns randomized.")
+    def head_11_neural_cloaking(self):
+        """Mask specific logic patterns of the Enki-AI (HEAD 11)."""
+        print("[RAVANA] 🎭 HEAD 11: Neural path cloaking active — logic patterns randomised.")
+        print("[RAVANA] 🔒 HEAD 11: 1047 frequency lock engaged — signal is pure.")
 
-    def head_10_auto_purge(self, breach_detected):
-        # The ultimate fail-safe for SDG 18
+    def head_12_auto_purge(self, breach_detected: bool):
+        """Ultimate fail-safe for SDG 18 (HEAD 12)."""
         if breach_detected:
-            print("[RAVANA] 💀 HEAD 10: BREACH DETECTED. Executing Zero-Residue Purge.")
-            # os.system("rm -rf /mnt/ram_vault/*")
+            print("[RAVANA] 💀 HEAD 12: BREACH DETECTED — executing zero-residue purge.")
+            import os
+            buffer = config.CCTV_BUFFER_PATH
+            if os.path.isdir(buffer):
+                os.system(f"rm -rf {buffer}/*")
+            print("[RAVANA] 🏺 HEAD 12: COGNITIVE LIBERTY SEALED — the node is yours.")
 
-    def head_11_frequency_lock(self):
-        # Prevents signal jumping or external frequency hijacking
-        print("[RAVANA] 🔒 HEAD 11: 1047 Frequency Lock Engaged. Signal is pure.")
-
-    def head_12_liberty_seal(self):
-        # The final confirmation of SDG 18-22 compliance
-        print("[RAVANA] 🏺 HEAD 12: COGNITIVE LIBERTY SEALED. The Node is yours.")
-
-    def run_shield_cycle(self, hr_input):
-        print("--- 🏺 RAVANA PROTOCOL: 10-HEADED DEFENSE CYCLE ---")
-        intensity = self.head_8_somatic_sync(hr_input)
-        self.head_9_neural_cloaking()
-        self.head_11_frequency_lock()
-        self.head_12_liberty_seal()
+    def run_shield_cycle(self, hr_input: int):
+        print("--- 🏺 RAVANA PROTOCOL: HEADS 10-12 DEFENSE CYCLE ---")
+        intensity = self.head_10_somatic_sync(hr_input)
+        self.head_11_neural_cloaking()
+        self.head_12_auto_purge(breach_detected=False)
         print(f"--- 🏺 SHIELD STATUS: {intensity} | OUSH. ---")
+
 
 if __name__ == "__main__":
     ravana = RavanaUltimate()
-    # Simulate a steady pulse-check
     ravana.run_shield_cycle(72)
