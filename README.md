@@ -127,3 +127,71 @@ All tunable constants live in `config.py`. Key values:
 ---
 
 ## OUSH.
+
+---
+
+## Quick Start — Raspberry Pi 5
+
+### 1. Install system dependencies
+
+```bash
+sudo apt update && sudo apt install -y wireguard iw network-manager python3-pip
+```
+
+### 2. Deploy the protocol
+
+```bash
+sudo mkdir -p /opt/ravana-protocol
+sudo cp -r . /opt/ravana-protocol
+cd /opt/ravana-protocol
+sudo pip3 install -r requirements.txt
+```
+
+### 3. Configure WireGuard tunnels
+
+Place your peer configuration files in `/etc/wireguard/`:
+
+```
+/etc/wireguard/wg-uk-lon-01.conf
+/etc/wireguard/wg-se-sto-01.conf
+/etc/wireguard/wg-ch-zur-01.conf
+```
+
+Then update `WIREGUARD_ENDPOINTS` in `config.py` to match those filenames (without `.conf`).
+
+### 4. Wire the MAX30102 heart-rate sensor
+
+Connect the MAX30102 module to the Pi 5 40-pin header:
+
+| MAX30102 pin | Pi 5 header pin | BCM GPIO |
+|---|---|---|
+| VIN | Pin 1 (3.3 V) | — |
+| GND | Pin 6 (GND) | — |
+| SDA | Pin 3 | GPIO 2 |
+| SCL | Pin 5 | GPIO 3 |
+| INT | **Pin 11** | **GPIO 17** ← pulse input |
+
+Set `HR_INPUT_SOURCE = "gpio"` in `config.py`. The `GPIO_HR_PIN` constant (default `17`) controls which BCM pin is polled.
+
+> **Note:** `RPi.GPIO` is only installed automatically on `aarch64` (Raspberry Pi) hardware; it is skipped on x86 dev machines.
+
+### 5. Enable service decimation (optional)
+
+Set `ENABLE_SERVICE_DECIMATION = True` in `config.py` to disable the bloat services listed in `BLOAT_SERVICES` at each boot.
+
+### 6. Install the systemd service
+
+```bash
+sudo cp ravana.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable ravana.service
+sudo systemctl start ravana.service
+```
+
+Check status:
+
+```bash
+sudo systemctl status ravana.service
+journalctl -u ravana.service -f
+```
+

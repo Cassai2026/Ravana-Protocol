@@ -4,6 +4,7 @@ Basic smoke tests — verify every module instantiates and runs its
 primary method without raising an exception.
 """
 import os
+import subprocess
 import sys
 import unittest
 from unittest.mock import patch, MagicMock
@@ -23,6 +24,7 @@ class TestConfig(unittest.TestCase):
             "BASELINE_HR", "COERCION_LIMIT", "CHAFF_SIZE",
             "WIREGUARD_ENDPOINTS", "AUTHORIZED_MACS", "BLOAT_SERVICES",
             "LOG_SCRUB_TARGETS", "CCTV_BUFFER_PATH",
+            "DECOY_PORT", "AUDIT_LOG_FILE", "AUDIT_KEY_FILE",
         ]
         for attr in required:
             self.assertTrue(hasattr(config, attr), f"config.{attr} is missing")
@@ -198,5 +200,207 @@ class TestBiometric(unittest.TestCase):
             config.HR_INPUT_FILE = original_file
 
 
+class TestBaitSwitchDecoy(unittest.TestCase):
+    def test_engage_decoy_changes_mode(self):
+        from ravana_bait_switch import BaitSwitch
+        switch = BaitSwitch()
+        switch.engage_decoy()
+        self.assertEqual(switch.mode, "DECOY")
+
+    @patch("ravana_bait_switch.socketserver.TCPServer")
+    def test_decoy_server_starts(self, mock_server_cls):
+        """engage_decoy should start the background TCP server thread."""
+        mock_srv = MagicMock()
+        mock_server_cls.return_value = mock_srv
+        from ravana_bait_switch import BaitSwitch
+        switch = BaitSwitch()
+        switch.engage_decoy()
+        mock_server_cls.assert_called_once()
+        mock_srv.serve_forever.assert_called_once()
+
+    @patch("ravana_bait_switch.socketserver.TCPServer", side_effect=OSError("port in use"))
+    def test_decoy_server_gracefully_handles_error(self, _mock):
+        """engage_decoy must not raise even if the port is unavailable."""
+        from ravana_bait_switch import BaitSwitch
+        switch = BaitSwitch()
+        switch.engage_decoy()          # Should not raise
+        self.assertEqual(switch.mode, "DECOY")
+
+    @patch("ravana_bait_switch.socketserver.TCPServer")
+    def test_stop_decoy_resets_mode(self, mock_server_cls):
+        mock_srv = MagicMock()
+        mock_server_cls.return_value = mock_srv
+        from ravana_bait_switch import BaitSwitch
+        switch = BaitSwitch()
+        switch.engage_decoy()
+        switch.stop_decoy()
+        self.assertEqual(switch.mode, "SOVEREIGN")
+        mock_srv.shutdown.assert_called_once()
+
+
+class TestTunnel(unittest.TestCase):
+    @patch("subprocess.run")
+    def test_rotate_tunnel_calls_wg_quick(self, mock_run):
+        """rotate_tunnel should call wg-quick down and then up."""
+        import config
+        original = config.WIREGUARD_ENDPOINTS
+        config.WIREGUARD_ENDPOINTS = ["ep_a", "ep_b"]
+        from ravana_tunnel import SilentTunnel
+        tunnel = SilentTunnel()
+        tunnel.rotate_tunnel()
+        self.assertEqual(mock_run.call_count, 2)
+        config.WIREGUARD_ENDPOINTS = original
+
+    @patch("subprocess.run")
+    def test_single_endpoint_skips_rotation(self, mock_run):
+        """When only one endpoint exists, rotation should be skipped silently."""
+        import config
+        original = config.WIREGUARD_ENDPOINTS
+        config.WIREGUARD_ENDPOINTS = ["only_ep"]
+        from ravana_tunnel import SilentTunnel
+        tunnel = SilentTunnel()
+        tunnel.current_endpoint = "only_ep"
+        tunnel.rotate_tunnel()
+        mock_run.assert_not_called()
+        config.WIREGUARD_ENDPOINTS = original
+
+    @patch("subprocess.run", side_effect=FileNotFoundError)
+    def test_rotate_handles_missing_wg_quick(self, _mock):
+        """Missing wg-quick binary must not raise."""
+        import config
+        original = config.WIREGUARD_ENDPOINTS
+        config.WIREGUARD_ENDPOINTS = ["ep_a", "ep_b"]
+        from ravana_tunnel import SilentTunnel
+        tunnel = SilentTunnel()
+        tunnel.rotate_tunnel()   # Should not raise
+        config.WIREGUARD_ENDPOINTS = original
+
+    @patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "wg-quick"))
+    def test_rotate_handles_command_error(self, _mock):
+        """A CalledProcessError from wg-quick must not propagate."""
+        import config
+        original = config.WIREGUARD_ENDPOINTS
+        config.WIREGUARD_ENDPOINTS = ["ep_a", "ep_b"]
+        from ravana_tunnel import SilentTunnel
+        tunnel = SilentTunnel()
+        tunnel.rotate_tunnel()   # Should not raise
+        config.WIREGUARD_ENDPOINTS = original
+
+
+class TestIgnite(unittest.TestCase):
+    @patch("ravana_supreme.ravana_master_watch")
+    def test_ignite_calls_master_watch(self, mock_watch):
+        """Running ravana_ignite as __main__ delegates to ravana_master_watch."""
+        import runpy
+        runpy.run_module("ravana_ignite", run_name="__main__", alter_sys=True)
+        mock_watch.assert_called_once()
+
+
+class TestIronClad(unittest.TestCase):
+    @patch("ravana_tunnel.SilentTunnel.rotate_tunnel")
+    @patch("ravana_mirage.MirageGenerator.generate_ghost_signals")
+    @patch("ravana_obfuscator.DPIObfuscator.fragment_and_pad", return_value="ok")
+    @patch("ravana_ultimate.RavanaUltimate.run_shield_cycle")
+    def test_engage_iron_clad_runs(self, mock_cycle, mock_pad, mock_mirage, mock_tunnel):
+        from ravana_iron_clad import engage_iron_clad
+        engage_iron_clad(hr_input=72)
+        mock_cycle.assert_called_once_with(72)
+        mock_pad.assert_called_once()
+        mock_mirage.assert_called_once()
+        mock_tunnel.assert_called_once()
+
+
+class TestAuditLog(unittest.TestCase):
+    def _tmp_config(self, tmp_dir):
+        """Monkey-patch config paths to temp dir and return originals."""
+        import config
+        orig_key = config.AUDIT_KEY_FILE
+        orig_log = config.AUDIT_LOG_FILE
+        config.AUDIT_KEY_FILE = os.path.join(tmp_dir, "audit.key")
+        config.AUDIT_LOG_FILE = os.path.join(tmp_dir, "audit.log")
+        return orig_key, orig_log
+
+    def _restore_config(self, orig_key, orig_log):
+        import config
+        config.AUDIT_KEY_FILE = orig_key
+        config.AUDIT_LOG_FILE = orig_log
+
+    def test_log_and_read_round_trip(self):
+        import tempfile
+        import importlib
+        import ravana_audit
+        with tempfile.TemporaryDirectory() as tmp:
+            orig_key, orig_log = self._tmp_config(tmp)
+            importlib.reload(ravana_audit)
+            try:
+                ravana_audit.log_event("TEST_EVENT", "hello")
+                entries = ravana_audit.read_audit_log()
+                self.assertEqual(len(entries), 1)
+                self.assertEqual(entries[0]["event"], "TEST_EVENT")
+                self.assertEqual(entries[0]["detail"], "hello")
+            finally:
+                self._restore_config(orig_key, orig_log)
+                importlib.reload(ravana_audit)
+
+    def test_log_multiple_events(self):
+        import tempfile
+        import importlib
+        import ravana_audit
+        with tempfile.TemporaryDirectory() as tmp:
+            orig_key, orig_log = self._tmp_config(tmp)
+            importlib.reload(ravana_audit)
+            try:
+                ravana_audit.log_event("EVENT_A")
+                ravana_audit.log_event("EVENT_B", "detail_b")
+                entries = ravana_audit.read_audit_log()
+                self.assertEqual(len(entries), 2)
+                self.assertEqual(entries[0]["event"], "EVENT_A")
+                self.assertEqual(entries[1]["event"], "EVENT_B")
+            finally:
+                self._restore_config(orig_key, orig_log)
+                importlib.reload(ravana_audit)
+
+    def test_read_empty_log_returns_empty_list(self):
+        import tempfile
+        import importlib
+        import ravana_audit
+        with tempfile.TemporaryDirectory() as tmp:
+            orig_key, orig_log = self._tmp_config(tmp)
+            importlib.reload(ravana_audit)
+            try:
+                entries = ravana_audit.read_audit_log()
+                self.assertEqual(entries, [])
+            finally:
+                self._restore_config(orig_key, orig_log)
+                importlib.reload(ravana_audit)
+
+
+class TestIntegration(unittest.TestCase):
+    """End-to-end smoke test for ravana_master_watch()."""
+
+    @patch("ravana_tunnel.SilentTunnel.rotate_tunnel")
+    @patch("ravana_mirage.MirageGenerator.generate_ghost_signals")
+    @patch("ravana_obfuscator.DPIObfuscator.fragment_and_pad", return_value="ok")
+    @patch("ravana_ultimate.RavanaUltimate.run_shield_cycle")
+    @patch("ravana_sanitizer.SignalSanitizer.scan_for_static", return_value=False)
+    @patch("requests.get")
+    @patch("os.system")
+    @patch("subprocess.run")
+    @patch("ravana_biometric.read_heart_rate", return_value=72)
+    @patch("ravana_audit.log_event")
+    def test_master_watch_completes(
+        self, mock_log, mock_hr, mock_sub, mock_sys,
+        mock_get, mock_scan, mock_cycle, mock_pad,
+        mock_mirage, mock_tunnel,
+    ):
+        import importlib
+        import ravana_supreme
+        importlib.reload(ravana_supreme)
+        ravana_supreme.ravana_master_watch()
+        # Audit log should have been called at least for boot and status
+        self.assertGreater(mock_log.call_count, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
+
