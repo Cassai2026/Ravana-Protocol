@@ -11,15 +11,20 @@ HR_INPUT_SOURCE = "file"            # "file" | "gpio" | "manual"
 HR_INPUT_FILE = "/tmp/ravana_hr.txt"  # Written by sensor integration
 HR_SAMPLE_WINDOW_SECONDS = 10       # GPIO sampling window length
 HR_MANUAL_DEFAULT = 72              # Used when source = "manual"
+# MAX30102 pulse sensor: connect INT pin to BCM GPIO 17 (physical pin 11)
+GPIO_HR_PIN = 17
 
 # ── Service Control ───────────────────────────────────────────────────────────
-ENABLE_SERVICE_DECIMATION = False   # Set True on Pi to actively disable bloat services
+# Set True on Raspberry Pi 5 to actively disable bloat services at boot
+ENABLE_SERVICE_DECIMATION = False
 
 # ── Network / Tunnel ──────────────────────────────────────────────────────────
+# Replace these with your real WireGuard peer config names (wg-quick profile names).
+# Each string must match a profile under /etc/wireguard/<name>.conf on the Pi.
 WIREGUARD_ENDPOINTS = [
-    "node_uk_1",
-    "node_se_1",
-    "node_ch_1",
+    "wg-uk-lon-01",     # UK sovereign relay — London
+    "wg-se-sto-01",     # Sweden relay — Stockholm
+    "wg-ch-zur-01",     # Switzerland relay — Zurich
 ]
 MONITORED_INTERFACES = ["wlan0", "eth0"]
 AUTHORIZED_MACS = ["NODE_29_OAKLEY", "TRAFFORD_MESH_PRIMARY"]
@@ -46,17 +51,28 @@ CCTV_RETENTION_SECONDS = 60
 
 # ── Bloat Services ────────────────────────────────────────────────────────────
 BLOAT_SERVICES = [
-    "avahi-daemon",   # Local discovery — leakage risk
-    "bluetooth",      # Keep off for signal purity unless needed
-    "cups",           # Printing — irrelevant for edge node
-    "packagekit",     # Auto-updates — unauthorised system changes
-    "whoopsie",       # Ubuntu error reporting — telemetry
+    "avahi-daemon",       # Local discovery — leakage risk
+    "bluetooth",          # Keep off for signal purity unless needed
+    "cups",               # Printing — irrelevant for edge node
+    "packagekit",         # Auto-updates — unauthorised system changes
+    "whoopsie",           # Ubuntu error reporting — telemetry
+    "snapd",              # Snap daemon — telemetry + unnecessary on Pi 5
+    "ModemManager",       # Modem management — irrelevant for edge node
+    "triggerhappy",       # Key daemon — unnecessary on Pi 5
+    "hciuart",            # Bluetooth UART — matches bluetooth above
 ]
 
 # ── Honeypot ──────────────────────────────────────────────────────────────────
 BAIT_VAULT_PATH = "./vault_bait"
 BAIT_FILE_NAME = "passwords.txt"
 BAIT_CONTENT = "TRAP_ACTIVE: RAVANA_PROTOCOL_BREACH_DETECTED"
+
+# ── Decoy Mode ────────────────────────────────────────────────────────────────
+DECOY_PORT = 8080                   # Port for the HEAD 16 fake HTTP responder
+
+# ── Audit Log ─────────────────────────────────────────────────────────────────
+AUDIT_LOG_FILE = "/tmp/ravana_audit.log"    # Encrypted append-only event log
+AUDIT_KEY_FILE = "/tmp/ravana_audit.key"    # Fernet key (auto-generated on first run)
 
 # ── Canonical Head Map ────────────────────────────────────────────────────────
 HEAD_MAP = {

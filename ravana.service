@@ -1,0 +1,18 @@
+[Unit]
+Description=Ravana Protocol — 16-Headed Shield
+Documentation=https://github.com/Cassai2026/Ravana-Protocol
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/ravana-protocol
+ExecStart=/usr/bin/python3 ravana_supreme.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,5 @@
 import config
+from ravana_audit import log_event
 
 
 class BioSentry:
@@ -13,6 +14,7 @@ class BioSentry:
         """
         if current_hr >= self.coercion_limit:
             print("[RAVANA] 🚨 HEAD 15: COERCION DETECTED — biometric spike out of safety bounds.")
+            log_event("COERCION_DETECTED", f"hr={current_hr} limit={self.coercion_limit}")
             self.trigger_ghost_purge()
             return True
         return False

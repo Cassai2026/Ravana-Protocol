@@ -27,8 +27,8 @@ class SilentTunnel:
             subprocess.run(["sudo", "wg-quick", "up", new_point], check=True, timeout=15)
             self.current_endpoint = new_point
             print(f"[RAVANA] ✅ TUNNEL: Secured via {new_point} — frequency shifted.")
-        except subprocess.CalledProcessError as exc:
-            print(f"[RAVANA] ⚠️  TUNNEL: Rotation failed — command error.")
+        except subprocess.CalledProcessError:
+            print("[RAVANA] ⚠️  TUNNEL: Rotation failed — command error.")
         except FileNotFoundError:
             print("[RAVANA] ⚠️  TUNNEL: wg-quick not found — WireGuard not installed.")
 
