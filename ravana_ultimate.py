@@ -1,3 +1,5 @@
+import os
+import shutil
 import config
 
 
@@ -27,10 +29,13 @@ class RavanaUltimate:
         """Ultimate fail-safe for SDG 18 (HEAD 12)."""
         if breach_detected:
             print("[RAVANA] 💀 HEAD 12: BREACH DETECTED — executing zero-residue purge.")
-            import os
             buffer = config.CCTV_BUFFER_PATH
             if os.path.isdir(buffer):
-                os.system(f"rm -rf {buffer}/*")
+                for entry in os.scandir(buffer):
+                    if entry.is_dir(follow_symlinks=False):
+                        shutil.rmtree(entry.path)
+                    elif entry.is_file(follow_symlinks=False):
+                        os.remove(entry.path)
             print("[RAVANA] 🏺 HEAD 12: COGNITIVE LIBERTY SEALED — the node is yours.")
 
     def run_shield_cycle(self, hr_input: int):

@@ -49,13 +49,13 @@ def _read_from_gpio() -> int:
 
         pulse_count = 0
         start = time.time()
-        while time.time() - start < 10:   # sample for 10 seconds
+        while time.time() - start < config.HR_SAMPLE_WINDOW_SECONDS:
             if GPIO.input(PIN) == GPIO.LOW:
                 pulse_count += 1
                 time.sleep(0.01)
 
         GPIO.cleanup()
-        bpm = pulse_count * 6  # 10-sec window × 6 = beats per minute
+        bpm = pulse_count * (60 // config.HR_SAMPLE_WINDOW_SECONDS)
         return bpm
     except ImportError:
         print("[RAVANA] ⚠️  RPi.GPIO not available. Using manual default.")
@@ -67,4 +67,4 @@ def _read_from_gpio() -> int:
 
 if __name__ == "__main__":
     hr = read_heart_rate()
-    print(f"[RAVANA] ❤️  Current heart rate: {hr} bpm")
+    print("[RAVANA] ❤️  Heart rate reading acquired.")

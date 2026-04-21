@@ -9,7 +9,11 @@ BASELINE_HR = 70                    # Resting heart rate (bpm)
 COERCION_LIMIT = 145                # Stress threshold that triggers ghost purge
 HR_INPUT_SOURCE = "file"            # "file" | "gpio" | "manual"
 HR_INPUT_FILE = "/tmp/ravana_hr.txt"  # Written by sensor integration
+HR_SAMPLE_WINDOW_SECONDS = 10       # GPIO sampling window length
 HR_MANUAL_DEFAULT = 72              # Used when source = "manual"
+
+# ── Service Control ───────────────────────────────────────────────────────────
+ENABLE_SERVICE_DECIMATION = False   # Set True on Pi to actively disable bloat services
 
 # ── Network / Tunnel ──────────────────────────────────────────────────────────
 WIREGUARD_ENDPOINTS = [

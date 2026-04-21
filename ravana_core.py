@@ -27,7 +27,8 @@ class RavanaCore:
         print(f"[HEAD  5] {config.HEAD_MAP[5]}: identifying system bloat...")
         stripper = LogicStripper()
         stripper.identify_bloat()
-        # stripper.decimate()  # Uncomment to actively remove services on the Pi
+        if config.ENABLE_SERVICE_DECIMATION:
+            stripper.decimate()
 
         print(f"[HEAD  6] {config.HEAD_MAP[6]}: scanning airwaves...")
         SignalSanitizer().scan_for_static()

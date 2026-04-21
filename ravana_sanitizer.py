@@ -39,11 +39,15 @@ class SignalSanitizer:
                 timeout=15,
             )
             output = result.stdout
-            detected_macs = [
-                line.split("BSS")[1].strip().split()[0]
-                for line in output.splitlines()
-                if line.strip().startswith("BSS")
-            ]
+            detected_macs = []
+            for line in output.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("BSS"):
+                    parts = stripped.split("BSS", 1)
+                    if len(parts) > 1:
+                        tokens = parts[1].strip().split()
+                        if tokens:
+                            detected_macs.append(tokens[0])
             for mac in detected_macs:
                 if mac not in self.authorized_macs:
                     print(f"[RAVANA] 🚨 HEAD 6: Unauthorised BSSID detected via iw: {mac}")
