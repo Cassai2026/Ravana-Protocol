@@ -1,28 +1,29 @@
-﻿import os
+import subprocess
+import config
+
 
 class LogicStripper:
     def __init__(self):
-        # The 'Silly Boy' List: Services that compromise cognitive liberty or waste cycles.
-        self.target_bloat = [
-            "avahi-daemon",     # Local discovery (leakage risk)
-            "bluetooth",        # Unless specified, keep off for 9CU signal purity
-            "cups",             # Printing services (irrelevant for the Edge Node)
-            "packagekit",       # Auto-updates (unauthorized system changes)
-            "whoopsie",         # Ubuntu error reporting (telemetry)
-        ]
+        self.target_bloat = config.BLOAT_SERVICES
 
     def identify_bloat(self):
         print("[RAVANA] 🗡️ HEAD 5: ANALYZING SYSTEM FRICTION...")
         for service in self.target_bloat:
-            print(f"[RAVANA] Found Anti-Sovereign Service: {service}")
-        
+            print(f"[RAVANA] Found anti-sovereign service: {service}")
+
     def decimate(self):
-        print("[RAVANA] 💀 INITIATING SYSTEM DECIMATION...")
+        print("[RAVANA] 💀 HEAD 5: INITIATING SYSTEM DECIMATION...")
         for service in self.target_bloat:
-            # In a live Pi 5 environment, this executes the purge
-            # os.system(f"sudo systemctl disable {service} && sudo systemctl stop {service}")
-            print(f"[RAVANA] Decimated: {service}")
-        print("[RAVANA] ✅ SYSTEM STRIPPED. Only Sovereign Logic remains.")
+            try:
+                subprocess.run(["sudo", "systemctl", "disable", service], check=True, timeout=15)
+                subprocess.run(["sudo", "systemctl", "stop", service], check=True, timeout=15)
+                print(f"[RAVANA] Decimated: {service}")
+            except subprocess.CalledProcessError:
+                print(f"[RAVANA] ⚠️  HEAD 5: Could not disable/stop {service}.")
+            except FileNotFoundError:
+                print("[RAVANA] ⚠️  HEAD 5: systemctl not found.")
+        print("[RAVANA] ✅ HEAD 5: SYSTEM STRIPPED — only sovereign logic remains.")
+
 
 if __name__ == "__main__":
     stripper = LogicStripper()

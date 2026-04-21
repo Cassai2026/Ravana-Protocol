@@ -1,12 +1,9 @@
-﻿import os
-from ravana_ultimate import RavanaUltimate
-
-def boot_ravana():
-    print("🏺 [BOOT] Verifying SDG 18-22 Compliance...")
-    print("🏺 [BOOT] Cognitive Liberty Protections: ACTIVE.")
-    shield = RavanaUltimate()
-    shield.run_shield_cycle(70)
-    print("🏺 [BOOT] Ravana Protocol is now patrolling the Node. OUSH.")
+"""
+ravana_ignite.py — Boot-sequence alias.
+Calls ravana_supreme.py's master watch loop.
+Prefer running ravana_supreme.py directly.
+"""
+from ravana_supreme import ravana_master_watch
 
 if __name__ == "__main__":
-    boot_ravana()
+    ravana_master_watch()
