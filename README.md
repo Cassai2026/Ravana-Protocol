@@ -193,5 +193,22 @@ Check status:
 ```bash
 sudo systemctl status ravana.service
 journalctl -u ravana.service -f
-```
+
+---
+
+## Licensing
+
+This project uses **dual licensing** to protect the work for the 15 Billion Hearts and prevent extraction by corporate interests.
+
+| Component | Licence |
+|-----------|---------|
+| **Codebase** (all `.py` files, scripts, and software) | [GNU Affero General Public License v3.0](./LICENSE-AGPL-3.0) |
+| **Governance Logic** (documentation, design rules, SDG frameworks, and non-software IP) | [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](./LICENSE-CC-BY-NC-SA-4.0) |
+
+### What this means
+
+- **AGPL-3.0** — Any use, modification, or deployment of the software — including over a network — must remain open-source under the same licence. Corporate actors cannot take this code proprietary.
+- **CC BY-NC-SA 4.0** — The governance frameworks, documentation, and design logic may be shared and adapted freely for **non-commercial** purposes only, with attribution and under the same licence.
+
+Together these licences ensure that all derivatives remain free, open, and non-extractive.```
 
