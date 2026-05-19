@@ -90,6 +90,16 @@ python ravana_supreme.py
 
 This boots all 16 heads in sequence and leaves the Bio-Sentry watching for coercion events.
 
+### Windows note
+
+On Windows, Linux-only operations are skipped automatically:
+- systemd service decimation (`systemctl`)
+- Linux log truncation (`truncate` in `/var/log`)
+- Linux wireless controls (`iw` / `nmcli`)
+- WireGuard tunnel rotation via `wg-quick`
+
+Core module flow, biometric file/manual input, audit logging, mirage/obfuscation, and tests still run.
+
 ### Biometric Input (Heart Rate)
 
 The shield reads heart-rate from one of three configurable sources (set `HR_INPUT_SOURCE` in `config.py`):

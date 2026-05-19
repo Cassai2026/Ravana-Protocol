@@ -1,5 +1,13 @@
+import os
+import shutil
 import subprocess
 import config
+
+
+def _with_optional_sudo(command: list[str]) -> list[str]:
+    if os.name != "nt" and hasattr(os, "geteuid") and os.geteuid() != 0 and shutil.which("sudo"):
+        return ["sudo", *command]
+    return command
 
 
 class LogicStripper:
@@ -13,10 +21,13 @@ class LogicStripper:
 
     def decimate(self):
         print("[RAVANA] 💀 HEAD 5: INITIATING SYSTEM DECIMATION...")
+        if os.name == "nt":
+            print("[RAVANA] HEAD 5: Windows detected — skipping systemd decimation.")
+            return
         for service in self.target_bloat:
             try:
-                subprocess.run(["sudo", "systemctl", "disable", service], check=True, timeout=15)
-                subprocess.run(["sudo", "systemctl", "stop", service], check=True, timeout=15)
+                subprocess.run(_with_optional_sudo(["systemctl", "disable", service]), check=True, timeout=15)
+                subprocess.run(_with_optional_sudo(["systemctl", "stop", service]), check=True, timeout=15)
                 print(f"[RAVANA] Decimated: {service}")
             except subprocess.CalledProcessError:
                 print(f"[RAVANA] ⚠️  HEAD 5: Could not disable/stop {service}.")
