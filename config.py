@@ -3,12 +3,16 @@ config.py — Ravana Protocol Central Configuration
 All constants used across modules are defined here.
 Edit this file to tune the shield for your environment.
 """
+from pathlib import Path
+import tempfile
+
+TEMP_DIR = Path(tempfile.gettempdir())
 
 # ── Biometric ─────────────────────────────────────────────────────────────────
 BASELINE_HR = 70                    # Resting heart rate (bpm)
 COERCION_LIMIT = 145                # Stress threshold that triggers ghost purge
 HR_INPUT_SOURCE = "file"            # "file" | "gpio" | "manual"
-HR_INPUT_FILE = "/tmp/ravana_hr.txt"  # Written by sensor integration
+HR_INPUT_FILE = str(TEMP_DIR / "ravana_hr.txt")  # Written by sensor integration
 HR_SAMPLE_WINDOW_SECONDS = 10       # GPIO sampling window length
 HR_MANUAL_DEFAULT = 72              # Used when source = "manual"
 # MAX30102 pulse sensor: connect INT pin to BCM GPIO 17 (physical pin 11)
@@ -46,7 +50,7 @@ LOG_SCRUB_TARGETS = ["/var/log/auth.log", "/var/log/syslog"]
 LOG_SCRUB_INTERVAL = 60             # Seconds between scrub cycles
 
 # ── Visual Buffer ─────────────────────────────────────────────────────────────
-CCTV_BUFFER_PATH = "/tmp/cctv_buffer"
+CCTV_BUFFER_PATH = str(TEMP_DIR / "cctv_buffer")
 CCTV_RETENTION_SECONDS = 60
 
 # ── Bloat Services ────────────────────────────────────────────────────────────
@@ -71,8 +75,8 @@ BAIT_CONTENT = "TRAP_ACTIVE: RAVANA_PROTOCOL_BREACH_DETECTED"
 DECOY_PORT = 8080                   # Port for the HEAD 16 fake HTTP responder
 
 # ── Audit Log ─────────────────────────────────────────────────────────────────
-AUDIT_LOG_FILE = "/tmp/ravana_audit.log"    # Encrypted append-only event log
-AUDIT_KEY_FILE = "/tmp/ravana_audit.key"    # Fernet key (auto-generated on first run)
+AUDIT_LOG_FILE = str(TEMP_DIR / "ravana_audit.log")    # Encrypted append-only event log
+AUDIT_KEY_FILE = str(TEMP_DIR / "ravana_audit.key")    # Fernet key (auto-generated on first run)
 
 # ── Canonical Head Map ────────────────────────────────────────────────────────
 HEAD_MAP = {

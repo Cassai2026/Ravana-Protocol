@@ -67,7 +67,7 @@ Ravana-Protocol/
 
 ## Requirements
 
-- Raspberry Pi 5 (or any Linux host for development/simulation)
+- Raspberry Pi 5 (or any Linux/Windows host for development/simulation)
 - Python 3.10+
 - WireGuard installed and configured for tunnel rotation
 - `iw` and `nmcli` for signal sanitization
@@ -96,7 +96,7 @@ The shield reads heart-rate from one of three configurable sources (set `HR_INPU
 
 | Source | Description |
 |--------|-------------|
-| `"file"` | Reads from `/tmp/ravana_hr.txt` — write a number (e.g. `72`) to this file from any sensor script |
+| `"file"` | Reads from the OS temp directory (default file: `ravana_hr.txt`) — write a number (e.g. `72`) to this file from any sensor script |
 | `"gpio"` | Reads a pulse-count pin via `RPi.GPIO` (requires hardware) |
 | `"manual"` | Uses the `HR_MANUAL_DEFAULT` constant — good for testing |
 
@@ -194,4 +194,3 @@ Check status:
 sudo systemctl status ravana.service
 journalctl -u ravana.service -f
 ```
-

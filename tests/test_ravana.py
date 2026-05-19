@@ -169,10 +169,11 @@ class TestBiometric(unittest.TestCase):
 
     def test_file_source_fallback(self):
         import config
+        import tempfile
         original_source = config.HR_INPUT_SOURCE
         original_file = config.HR_INPUT_FILE
         config.HR_INPUT_SOURCE = "file"
-        config.HR_INPUT_FILE = "/tmp/nonexistent_ravana_hr_test.txt"
+        config.HR_INPUT_FILE = os.path.join(tempfile.gettempdir(), "nonexistent_ravana_hr_test.txt")
         from ravana_biometric import read_heart_rate
         hr = read_heart_rate()
         self.assertEqual(hr, config.HR_MANUAL_DEFAULT)
@@ -403,4 +404,3 @@ class TestIntegration(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
