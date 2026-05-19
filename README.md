@@ -98,7 +98,7 @@ On Windows, Linux-only operations are skipped automatically:
 - Linux wireless controls (`iw` / `nmcli`)
 - WireGuard tunnel rotation via `wg-quick`
 
-Core module flow, biometric file/manual input, audit logging, mirage/obfuscation, and tests still run.
+Core module flow, biometric file / manual input, audit logging, mirage/obfuscation, and tests still run.
 
 ### Biometric Input (Heart Rate)
 
