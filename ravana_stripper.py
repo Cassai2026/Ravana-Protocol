@@ -1,5 +1,6 @@
 import subprocess
 import config
+from ravana_platform import is_windows, with_optional_sudo
 
 
 class LogicStripper:
@@ -13,10 +14,13 @@ class LogicStripper:
 
     def decimate(self):
         print("[RAVANA] 💀 HEAD 5: INITIATING SYSTEM DECIMATION...")
+        if is_windows():
+            print("[RAVANA] HEAD 5: Windows detected — skipping systemd decimation.")
+            return
         for service in self.target_bloat:
             try:
-                subprocess.run(["sudo", "systemctl", "disable", service], check=True, timeout=15)
-                subprocess.run(["sudo", "systemctl", "stop", service], check=True, timeout=15)
+                subprocess.run(with_optional_sudo(["systemctl", "disable", service]), check=True, timeout=15)
+                subprocess.run(with_optional_sudo(["systemctl", "stop", service]), check=True, timeout=15)
                 print(f"[RAVANA] Decimated: {service}")
             except subprocess.CalledProcessError:
                 print(f"[RAVANA] ⚠️  HEAD 5: Could not disable/stop {service}.")

@@ -1,5 +1,6 @@
 import subprocess
 import config
+from ravana_platform import is_windows, with_optional_sudo
 
 
 class SignalSanitizer:
@@ -14,6 +15,9 @@ class SignalSanitizer:
         Returns True if a rogue probe was detected, False otherwise.
         """
         print("[RAVANA] 📡 HEAD 6: SCANNING AIRWAVES FOR SIGNAL LEAKAGE...")
+        if is_windows():
+            print("[RAVANA] HEAD 6: Windows detected — skipping Linux wireless scan.")
+            return False
         rogue_detected = False
 
         for iface in self.monitored_interfaces:
@@ -87,9 +91,12 @@ class SignalSanitizer:
     def sanitize(self):
         print("[RAVANA] 🚨 HEAD 6: SIGNAL BREACH — UNAUTHORISED PROBE DETECTED.")
         print("[RAVANA] 🛡️  HEAD 6: INITIATING FREQUENCY SHIFT...")
+        if is_windows():
+            print("[RAVANA] HEAD 6: Windows detected — nmcli sanitize skipped.")
+            return
         try:
-            subprocess.run(["sudo", "nmcli", "networking", "off"], check=True, timeout=10)
-            subprocess.run(["sudo", "nmcli", "networking", "on"], check=True, timeout=10)
+            subprocess.run(with_optional_sudo(["nmcli", "networking", "off"]), check=True, timeout=10)
+            subprocess.run(with_optional_sudo(["nmcli", "networking", "on"]), check=True, timeout=10)
             print("[RAVANA] ✅ HEAD 6: AIRWAVES SANITIZED — cognitive liberty maintained.")
         except Exception as exc:
             print(f"[RAVANA] ⚠️  HEAD 6: Sanitize failed: {exc}")

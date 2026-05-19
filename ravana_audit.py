@@ -23,7 +23,10 @@ def _load_or_create_key() -> bytes:
     with open(key_path, "wb") as fh:
         fh.write(key)
     # Restrict key file to owner-only read/write
-    os.chmod(key_path, 0o600)
+    try:
+        os.chmod(key_path, 0o600)
+    except OSError as exc:
+        print(f"[RAVANA] ⚠️  AUDIT: could not tighten key file permissions: {exc}")
     return key
 
 

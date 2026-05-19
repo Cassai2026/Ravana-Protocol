@@ -1,6 +1,7 @@
 import subprocess
 import random
 import config
+from ravana_platform import is_windows, with_optional_sudo
 
 
 class SilentTunnel:
@@ -9,6 +10,9 @@ class SilentTunnel:
         self.current_endpoint = None
 
     def rotate_tunnel(self):
+        if is_windows():
+            print("[RAVANA] 🌀 TUNNEL: Windows detected — skipping wg-quick rotation.")
+            return
         # Validate against the whitelist before any subprocess call
         available = [ep for ep in self.endpoints if ep != self.current_endpoint]
         if not available:
@@ -23,8 +27,8 @@ class SilentTunnel:
 
         print(f"[RAVANA] 🌀 TUNNEL: Rotating to {new_point}...")
         try:
-            subprocess.run(["sudo", "wg-quick", "down", "wg0"], check=True, timeout=15)
-            subprocess.run(["sudo", "wg-quick", "up", new_point], check=True, timeout=15)
+            subprocess.run(with_optional_sudo(["wg-quick", "down", "wg0"]), check=True, timeout=15)
+            subprocess.run(with_optional_sudo(["wg-quick", "up", new_point]), check=True, timeout=15)
             self.current_endpoint = new_point
             print(f"[RAVANA] ✅ TUNNEL: Secured via {new_point} — frequency shifted.")
         except subprocess.CalledProcessError:
