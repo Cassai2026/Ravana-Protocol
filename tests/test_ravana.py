@@ -6,6 +6,7 @@ primary method without raising an exception.
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -169,7 +170,6 @@ class TestBiometric(unittest.TestCase):
 
     def test_file_source_fallback(self):
         import config
-        import tempfile
         original_source = config.HR_INPUT_SOURCE
         original_file = config.HR_INPUT_FILE
         config.HR_INPUT_SOURCE = "file"

@@ -70,7 +70,7 @@ Ravana-Protocol/
 - Raspberry Pi 5 (or any Linux/Windows host for development/simulation)
 - Python 3.10+
 - WireGuard installed and configured for tunnel rotation
-- `iw` and `nmcli` for signal sanitization
+- `iw` and `nmcli` for signal sanitization (Linux hosts)
 
 Install Python dependencies:
 
